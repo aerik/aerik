@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width; height=device-height; maximum-scale=1.0; initial-scale=1.0; user-scalable=no"/>
+<script src="GestureListener.js"></script>
+</head>
+<body>
+<style>
+  html, body{
+		-ms-touch-action: none;
+    touch-action: none;
+    width: 100%;
+    height: 100%;
+  }
+  #test {
+    background: green;
+    overflow: hidden;
+    color: white;
+    position: absolute;
+    -ms-touch-action: none;
+    touch-action: none;
+  }
+
+  body {
+    overflow: hidden;
+  }
+</style>
+
+<div id="test">
+<div id="eventName"></div>
+</div>
+<table id="ptrTable" border="1">
+</table>
+
+
+<script>
+
+window.onload = function(){
+  var test = document.querySelector('#test');
+  test.style.top = "50px";
+  test.style.left = "50px";
+  test.style.height = "250px";
+  test.style.width = "250px";
+  var g = new GestureListener(test);
+  test.addEventListener("gesture",function(e){
+		var funcs = [];
+		var eventNote = e.name + " " + e.pointers.length;
+		funcs.push(function(){ document.getElementById("eventName").innerHTML = eventNote; });
+		switch(e.name){
+			case "pan":
+			case "pan2":
+			 var y = e.moveY;
+			 var x = e.moveX;
+				funcs.push(function(){
+					test.style.top = parseInt(test.style.top) + y + "px";
+					test.style.left = parseInt(test.style.left) + x + "px";
+				});
+				break;
+			case "pinch":
+				var y = e.moveY;
+				var x = e.moveX;
+				var ppx = e.pinchPx;
+				funcs.push(function(){
+					var oldHeight = parseInt(test.style.height);
+					var oldWidth = parseInt(test.style.width);
+					var oldTop = parseInt(test.style.top);
+					var oldLeft = parseInt(test.style.left);
+					test.style.height = oldHeight + ppx + "px";
+					test.style.width = oldWidth + ppx + "px";
+					test.style.top = oldTop - Math.round(ppx/2) + y + "px";
+					test.style.left = oldLeft - Math.round(ppx/2) + x + "px";
+				});
+				break;
+		}
+		var ptrs = e.pointers;
+		var tbl = document.getElementById("ptrTable");
+		var fields = ["pointerId","pointerType","type","button","eventTime","distX","distY","direction","speed", "totalTime","ended"];
+		var ended = e.ended;
+		var showPtrData = function(){
+			tbl.innerHTML = "";
+			var row = document.createElement("tr");
+			tbl.appendChild(row);
+			for(var j=0;j<fields.length;j++){
+					var cell = document.createElement("th");
+					row.appendChild(cell);
+					cell.innerHTML = fields[j];
+				}	
+			for(var i=0;i<ptrs.length;i++){
+				var row = document.createElement("tr");
+				tbl.appendChild(row);
+				for(var j=0;j<fields.length;j++){
+					var cell = document.createElement("td");
+					row.appendChild(cell);
+					cell.innerHTML = ptrs[i][fields[j]];
+				}	
+			}
+			var row = document.createElement("tr");
+			tbl.appendChild(row);
+			var cell = document.createElement("td");
+			row.appendChild(cell);
+			var msg = e.name;
+			if(ended) msg += " gesture ended";
+			cell.innerHTML = msg;
+		}
+		funcs.push(showPtrData);
+		requestAnimationFrame(function(){
+			for(var i=0; i<funcs.length; i++){
+				funcs[i]();
+			}
+		});
+  });
+}
+</script>
+</body>
+</html>
