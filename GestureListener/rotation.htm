@@ -34,6 +34,25 @@
 
 
 <script>
+cssRotate = function (ele, value) {
+    ele.style.webkitTransform = "translate3D(0px,0px,-1px) rotate(" + value + "deg)";
+    ele.style.msTransform = "translate3D(0px,0px,-1px) rotate(" + value + "deg)";
+    ele.style.MozTransform = "translate3D(0px,0px,-1px) rotate(" + value + "deg)";
+    ele.style.OTransform = "translate3D(0px,0px,-1px) rotate(" + value + "deg)";
+    ele.style.transform = "translate3D(0px,0px,-1px) rotate(" + value + "deg)";
+    return;
+    if (value > 0) {
+        ele.style.position = "relative";
+        ele.style.zIndex = "0";
+        //ele.parentElement.style.position = "relative";
+        //ele.parentElement.style.zIndex = "25";
+        ele.parentElement.style.overflow = "hidden";
+    } else {
+        ele.style.position = "";
+        ele.style.zIndex = "";
+    }
+}
+
 window.onload = function(){
   var test = document.querySelector('#test');
   test.style.top = "50px";
@@ -41,10 +60,15 @@ window.onload = function(){
   test.style.height = "250px";
   test.style.width = "250px";
   var g = new GestureListener(test);
+  var rotation = 0;
   test.addEventListener("gesture",function(e){
 		var funcs = [];
 		var eventNote = e.name + " " + e.pointers.length;
 		funcs.push(function(){ document.getElementById("eventName").innerHTML = eventNote; });
+		if (event.rotate) {
+			rotation += event.rotate;
+				cssRotate(test,rotation);
+		}
 		switch(e.name){
 			case "pan":
 			case "pan2":
@@ -100,6 +124,11 @@ window.onload = function(){
 			var msg = e.name;
 			if(ended) msg += " gesture ended";
 			cell.innerHTML = msg;
+			if(rotation > 0){
+				cell = document.createElement("td");
+				row.appendChild(cell);
+				cell.innerHTML = "rotation: "+ Math.round(rotation);
+			}
 		}
 		funcs.push(showPtrData);
 		requestAnimationFrame(function(){
