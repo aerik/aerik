@@ -40,7 +40,7 @@ function successCallback(stream) {
 }
 
 function errorCallback(err) {
-    alert("The following error occurred: " + err);
+    alert("The following error occurred: " + err.message);
 }
 
 navigator.webkitGetUserMedia( {audio:true}, successCallback, errorCallback );
