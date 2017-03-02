@@ -39,8 +39,8 @@ function successCallback(stream) {
 	renderFrame();
 }
 
-function errorCallback() {
-    console.log("The following error occurred: " + err);
+function errorCallback(err) {
+    alert("The following error occurred: " + err);
 }
 
 navigator.webkitGetUserMedia( {audio:true}, successCallback, errorCallback );
