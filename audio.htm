@@ -1,0 +1,52 @@
+<html>
+<head>
+<script type="text/javascript">
+// success callback when requesting audio input stream
+var audioNode = null;
+function successCallback(stream) {
+    var audioContext = new AudioContext();
+    // Create an AudioNode from the stream.
+    var mediaStreamSource = audioContext.createMediaStreamSource( stream );
+    // Connect it to the destination to hear yourself (or any other node for processing!)
+    mediaStreamSource.connect( audioContext.destination );
+    
+    /****** hook it up to a visualizer, just for fun *************/
+    var analyser = audioContext.createAnalyser();
+	// we have to connect the source with the analyser 
+	mediaStreamSource.connect(analyser);
+ 
+	// frequencyBinCount tells you how many values you'll receive from the analyser
+	var frequencyData = new Uint8Array(analyser.frequencyBinCount);
+	var canvas = document.getElementById("visualizer");
+	var ctx = canvas.getContext("2d");
+	var max = 256;//based on Uint8Array possible values
+	// loop
+	function renderFrame() {
+	 // update data in frequencyData
+	 analyser.getByteFrequencyData(frequencyData);
+	 canvas.width = frequencyData.length;
+	 canvas.height = max;
+	 for(var i=0; i< frequencyData.length; i++){
+	 	 ctx.beginPath();
+		var colString = 'hsl('+ 360*i/frequencyData.length +',100%,50%)';
+		ctx.strokeStyle = colString;
+		ctx.moveTo(i, max);
+		ctx.lineTo(i, (max - frequencyData[i]));
+		ctx.stroke();
+	 } 
+	 requestAnimationFrame(renderFrame);
+	}
+	renderFrame();
+}
+
+function errorCallback() {
+    console.log("The following error occurred: " + err);
+}
+
+navigator.webkitGetUserMedia( {audio:true}, successCallback, errorCallback );
+</script>
+</head>
+<body>
+<canvas id="visualizer"></canvas>
+</body>
+</html>
