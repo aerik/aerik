@@ -2,11 +2,11 @@
 <head>
 <script type="text/javascript">
 // success callback when requesting audio input stream
-var audioNode = null;
+var audioContext, mediaStreamSource;//make it global so it's easy to play with in the console
 function successCallback(stream) {
-    var audioContext = new AudioContext();
+    audioContext = new AudioContext();
     // Create an AudioNode from the stream.
-    var mediaStreamSource = audioContext.createMediaStreamSource( stream );
+    mediaStreamSource = audioContext.createMediaStreamSource( stream );
     // Connect it to the destination to hear yourself (or any other node for processing!)
     mediaStreamSource.connect( audioContext.destination );
     
