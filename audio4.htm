@@ -1,0 +1,66 @@
+<html>
+<head>
+<script type="text/javascript">
+
+var mp3Source, micSource;
+var audioContext = new AudioContext();
+var analyser = audioContext.createAnalyser();
+var micGainNode = audioContext.createGain();
+var mp3GainNode = audioContext.createGain();
+micGainNode.connect(audioContext.destination);
+mp3GainNode.connect(audioContext.destination);
+micGainNode.connect(analyser);
+mp3GainNode.connect(analyser);
+
+
+window.onload = function(){
+	loadAudio();
+	/****** hook it up to a visualizer, just for fun *************/ 
+	// frequencyBinCount tells you how many values you'll receive from the analyser
+	var frequencyData = new Uint8Array(analyser.frequencyBinCount);
+	var canvas = document.getElementById("visualizer");
+	var ctx = canvas.getContext("2d");
+	var max = 256;//based on Uint8Array possible values
+	// loop
+	function renderFrame() {
+	 // update data in frequencyData
+	 analyser.getByteFrequencyData(frequencyData);
+	 canvas.width = frequencyData.length;
+	 canvas.height = max;
+	 for(var i=0; i< frequencyData.length; i++){
+		 ctx.beginPath();
+		var colString = 'hsl('+ 360*i/frequencyData.length +',100%,50%)';
+		ctx.strokeStyle = colString;
+		ctx.moveTo(i, max);
+		ctx.lineTo(i, (max - frequencyData[i]));
+		ctx.stroke();
+	 } 
+	 requestAnimationFrame(renderFrame);
+	}
+	renderFrame();
+}
+
+
+function loadAudio() {    
+    mp3Source = audioContext.createMediaElementSource( document.getElementById("no9") );
+    mp3Source.connect( mp3GainNode );
+}
+
+function successCallback(stream) {
+    micSource = audioContext.createMediaStreamSource( stream );
+    micSource.connect(micGainNode);
+}
+function errorCallback(err) {
+    alert("The following error occurred: " + err.message);
+}
+
+navigator.webkitGetUserMedia( {audio:true}, successCallback, errorCallback );
+</script>
+</head>
+<body>
+<audio id="no9" src='BeethovensSymphonyNo.9scherzo.mp3' controls></audio>
+<canvas id="visualizer"></canvas>
+Mic Volume <input type="range" min="0" max="1" value="1" id="mic" step=".05" oninput="micGainNode.gain.value=this.value;"><br />
+MP3 Volume <input type="range" min="0" max="1" value="1" id="mp3" step=".05" oninput="mp3GainNode.gain.value=this.value;">
+</body>
+</html>
