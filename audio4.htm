@@ -59,7 +59,9 @@ navigator.webkitGetUserMedia( {audio:true}, successCallback, errorCallback );
 </head>
 <body>
 <audio id="no9" src='BeethovensSymphonyNo.9scherzo.mp3' controls></audio>
+<br />
 <canvas id="visualizer"></canvas>
+<br />
 Mic Volume <input type="range" min="0" max="1" value="1" id="mic" step=".05" oninput="micGainNode.gain.value=this.value;"><br />
 MP3 Volume <input type="range" min="0" max="1" value="1" id="mp3" step=".05" oninput="mp3GainNode.gain.value=this.value;">
 </body>
