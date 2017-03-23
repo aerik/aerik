@@ -17,6 +17,12 @@ volume
 <canvas id="visualizer"></canvas>
 
 <script type="text/javascript">
+//redirect to https if on github
+if (window.location.host.substr(-10) == '.github.io' && window.location.protocol != 'https:') {
+    window.location.protocol = 'https:';
+}
+
+
 var notes = [];
 notes[0]={ n:'C0', h:16.35};
 notes[1]={ n:'C#0/Db0', h:17.32};
