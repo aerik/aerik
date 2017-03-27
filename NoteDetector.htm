@@ -136,8 +136,9 @@ notes[107]={ n:'B8', h:7902.13};
 var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 var micSource;
 var analyser = audioCtx.createAnalyser();
-analyser.minDecibels = -85;
-analyser.fftSize = 8192 * 4;//need at least 8192 to detect differences in low notes
+analyser.smoothingTimeConstant = 0.4;//default is 0.8, less is more responsive
+analyser.minDecibels = -80;
+analyser.fftSize = 8192 * 2;//need at least 8192 to detect differences in low notes
 var sampleRate = audioCtx.sampleRate;
 var gainNode = audioCtx.createGain();
 gainNode.connect(audioCtx.destination);
@@ -220,6 +221,7 @@ var freqAry = [];
 function getTones() {
 	analyser.getByteFrequencyData(frequencyData);
 	var bins = [];
+	var count = 0;
 	var total = 0;
 	var sum = 0;
 	var cutoff = 20;//redundant with decibels?
@@ -227,28 +229,37 @@ function getTones() {
 	for(var i=0; i< buflen; i++){
 		var fdat = frequencyData[i];
 		var freq = i * hertzBinSize;//freq in hertz for this sample
-		if(freq < notes[nPtr].h){
-			//consider the tones in this note's bucket
-			//for weighted average
+		var curNote = notes[nPtr];
+		var nextNote = notes[nPtr+1];
+		//cut off halfway into the next note
+		var hzLimit = curNote.h + ((nextNote.h - curNote.h)/2);
+		if(freq < hzLimit){
 			if(fdat > cutoff){
-				sum += i * fdat;
+				sum += i;//bin numbers
+				count++;
 				total += fdat;
 			}
 		}else{
-			if(total > 0){
-				var binNum = sum/total;
+			if(count > 0){
+				var binNum = sum/count;
 				var bin = {};
+				//round up
 				var power = frequencyData[Math.ceil(binNum)];
 				if(binNum > 0){
+					//round down
 					power = (power + frequencyData[Math.floor(binNum)])/2;
 				}
-				notes[nPtr].power = power;
+				//notes[nPtr].power = power;
+				//seems like it rounds the values too much?
+				notes[nPtr].power = total / count;
 				sum = 0;
+				count = 0;
 				total = 0;
 			}else{
 				notes[nPtr].power = 0;
 			}
-			if(nPtr < notes.length -1){
+			//next note
+			if(nPtr < notes.length -2){
 				nPtr++;
 			}
 		}
@@ -281,7 +292,7 @@ function drawNotes(){
 	for(var n=0; n< notes.length; n++){
 		var colString = 'hsl('+ 360*n/notes.length +',100%,80%)';
 		ctx.fillStyle = colString;
-		ctx.fillRect(120,n * 10,notes[n].power , 10);
+		ctx.fillRect(120,n * 10,notes[n].power , -10);
 	}
 	ctx.restore();
 }
