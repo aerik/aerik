@@ -136,9 +136,9 @@ notes[107]={ n:'B8', h:7902.13};
 var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
 var micSource;
 var analyser = audioCtx.createAnalyser();
-analyser.smoothingTimeConstant = 0.4;//default is 0.8, less is more responsive
-analyser.minDecibels = -80;
-analyser.fftSize = 8192 * 2;//need at least 8192 to detect differences in low notes
+analyser.smoothingTimeConstant = 0.2;//default is 0.8, less is more responsive
+analyser.minDecibels = -95;//-100 is default and is more sensitive (more noise)
+analyser.fftSize = 8192 * 4;//need at least 8192 to detect differences in low notes
 var sampleRate = audioCtx.sampleRate;
 var gainNode = audioCtx.createGain();
 gainNode.connect(audioCtx.destination);
