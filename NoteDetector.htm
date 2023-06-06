@@ -4,6 +4,7 @@
     <title>JavaScript Audio Write Example</title>
   </head>
   <body>
+	  <button type="button" id="startBtn" onclick="init()">Start</button>
   <!--
 frequency
 <input type="range" id="fIn" min="-52" max="54" oninput="show()" value="0" step="1" />
@@ -133,45 +134,57 @@ notes[105]={ n:'A8', h:7040};
 notes[106]={ n:'A#8/Bb8', h:7458.62};
 notes[107]={ n:'B8', h:7902.13};
 //interesting:  http://www.phy.mtu.edu/~suits/Physicsofmusic.html
-var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-var micSource;
-var analyser = audioCtx.createAnalyser();
-analyser.smoothingTimeConstant = 0.2;//default is 0.8, less is more responsive
-analyser.minDecibels = -95;//-100 is default and is more sensitive (more noise)
-analyser.fftSize = 8192 * 4;//need at least 8192 to detect differences in low notes
-var sampleRate = audioCtx.sampleRate;
-var gainNode = audioCtx.createGain();
-gainNode.connect(audioCtx.destination);
-/*
-var oscillator1 = audioCtx.createOscillator();
-oscillator1.type = "sine";
-oscillator1.connect(gainNode);
-oscillator1.connect(analyser);
-oscillator1.start();
-*/
 
-var hertzBinSize = sampleRate/ analyser.fftSize;
-console.log("bin size: " + hertzBinSize);
-var frequencyData = new Uint8Array(analyser.frequencyBinCount);
-var buflen = frequencyData.length;
+    var maxValue = 256;//based on Uint8Array possible values
+	var audioCtx;
+	var micSource;
+	var analyser;
+	var sampleRate;
+	var gainNode;
+	var hertzBinSize;
+	var frequencyData;
+	var buflen;
 
-var maxValue = 256;//based on Uint8Array possible values
+	function init() {
+		document.getElementById("startBtn").style.display = "none";
+		audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		analyser = audioCtx.createAnalyser();
+		analyser.smoothingTimeConstant = 0.2;//default is 0.8, less is more responsive
+		analyser.minDecibels = -95;//-100 is default and is more sensitive (more noise)
+		analyser.fftSize = 8192 * 4;//need at least 8192 to detect differences in low notes
+		sampleRate = audioCtx.sampleRate;
+		gainNode = audioCtx.createGain();
+		gainNode.connect(audioCtx.destination);
+		/*
+		var oscillator1 = audioCtx.createOscillator();
+		oscillator1.type = "sine";
+		oscillator1.connect(gainNode);
+		oscillator1.connect(analyser);
+		oscillator1.start();
+		*/
+
+		hertzBinSize = sampleRate / analyser.fftSize;
+		console.log("bin size: " + hertzBinSize);
+		frequencyData = new Uint8Array(analyser.frequencyBinCount);
+		buflen = frequencyData.length;
+        navigator.getUserMedia({ audio: true }, successCallback, errorCallback);
+		getTones();
+	}
+
 var volume;
 
 
 function successCallback(stream) {
     micSource = audioCtx.createMediaStreamSource( stream );
     micSource.connect(gainNode);
-    micSource.connect(analyser);
+	micSource.connect(analyser);
+    show();
 }
 function errorCallback(err) {
     alert("The following error occurred: " + err.message);
 }
 
-navigator.webkitGetUserMedia( {audio:true}, successCallback, errorCallback );
 
-
-show();
 
 function show() {
 /*
@@ -270,7 +283,6 @@ function getTones() {
 	drawNotes();
 	setTimeout(function(){ requestAnimationFrame(getTones) }, 50);
 }
-window.onload = getTones;
 
 var canvas = document.getElementById("visualizer");
 var ctx = canvas.getContext("2d");
